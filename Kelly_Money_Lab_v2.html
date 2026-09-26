@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#f7f4ee" />
+<title>Kelly Money Lab</title>
+<style>
+:root{
+  --bg:#f7f4ee;--card:#fffdf8;--ink:#24211d;--muted:#7a746b;--line:#e8e0d5;
+  --accent:#6d7b5a;--accent2:#b98d68;--danger:#a95656;--ok:#4f7a5b;--warn:#b9862d;
+  --shadow:0 8px 24px rgba(51,42,32,.08);--radius:20px;
+}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select,textarea{font:inherit} button{cursor:pointer}
+.app{max-width:980px;margin:0 auto;padding:18px 16px 96px}
+.topbar{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.brand h1{font-size:24px;margin:0 0 3px}.brand p{margin:0;color:var(--muted);font-size:13px}
+.periodbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px;min-width:190px}
+.periodbox label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}.periodbox select{width:100%;border:0;background:transparent;font-weight:700;color:var(--ink)}
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,253,248,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;justify-content:center;z-index:20}
+.nav-inner{width:min(980px,100%);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+.nav button{border:0;background:transparent;padding:9px 4px;color:var(--muted);font-size:11px;border-radius:12px}
+.nav button.active{color:var(--accent);background:#eef1e8;font-weight:800}
+.page{display:none}.page.active{display:block}
+.grid{display:grid;gap:14px}.grid.cards{grid-template-columns:repeat(4,1fr)}.grid.two{grid-template-columns:1fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.stat .label{font-size:12px;color:var(--muted);margin-bottom:8px}.stat .value{font-size:22px;font-weight:850}.stat .sub{font-size:11px;color:var(--muted);margin-top:5px}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:20px 0 10px}
+.section-title h2{font-size:16px;margin:0}.section-title small{color:var(--muted)}
+.accounts-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.account-chip{padding:12px;border:1px solid var(--line);border-radius:16px;background:#fff}.account-chip b{display:block;font-size:13px}.account-chip span{font-size:16px;font-weight:850}
+.progress-row{margin:13px 0}.progress-head{display:flex;justify-content:space-between;gap:10px;font-size:13px}.bar{height:9px;background:#eee8df;border-radius:999px;overflow:hidden;margin-top:7px}.bar>i{display:block;height:100%;background:var(--accent);border-radius:999px}.bar.warn>i{background:var(--warn)}.bar.over>i{background:var(--danger)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:var(--muted);font-weight:700}
+input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:13px;background:#fff;color:var(--ink);outline:none}input:focus,select:focus,textarea:focus{border-color:#a9b497}
+.type-toggle{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.type-toggle button{padding:11px;border:1px solid var(--line);background:#fff;border-radius:13px;font-weight:700;color:var(--muted)}.type-toggle button.active{background:#eef1e8;border-color:#cbd5bd;color:var(--accent)}
+.primary{border:0;background:var(--accent);color:white;border-radius:14px;padding:12px 16px;font-weight:800}.secondary{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:14px;padding:11px 14px;font-weight:700}.danger{border:1px solid #e3c6c6;background:#fff7f7;color:var(--danger);border-radius:12px;padding:8px 10px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.money-input{font-size:20px;font-weight:850}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:680px}.table th,.table td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}.table th{color:var(--muted);font-size:11px}.right{text-align:right!important}
+.badge{display:inline-flex;padding:4px 8px;border-radius:999px;background:#f0ece5;color:#5e574d;font-size:10px;font-weight:800}
+.badge.income{background:#e8f2ea;color:var(--ok)}.badge.expense{background:#f6e9e9;color:var(--danger)}.badge.transfer{background:#eceff7;color:#586a91}
+.callout{background:#f0f2ea;border:1px solid #dfe5d4;border-radius:16px;padding:12px 14px;font-size:12px;color:#4b5542}
+.donut-wrap{display:flex;gap:20px;align-items:center}.donut{width:150px;height:150px;border-radius:50%;position:relative;background:conic-gradient(var(--accent) 0 100%)}.donut:after{content:"";position:absolute;inset:28px;background:var(--card);border-radius:50%}.legend{flex:1;display:grid;gap:7px}.legend-row{display:flex;justify-content:space-between;gap:8px;font-size:12px}
+.small{font-size:11px;color:var(--muted)} .mono{font-variant-numeric:tabular-nums}
+.empty{text-align:center;color:var(--muted);padding:22px 10px;font-size:13px}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.pill-tabs{display:flex;gap:8px;flex-wrap:wrap}.pill-tabs button{border:1px solid var(--line);background:#fff;padding:8px 11px;border-radius:999px;font-size:12px}.pill-tabs button.active{background:#eef1e8;color:var(--accent);font-weight:800}
+.kpi-note{font-size:11px;color:var(--muted);margin-top:4px}
+@media (max-width:760px){
+ .grid.cards{grid-template-columns:1fr 1fr}.grid.two{grid-template-columns:1fr}.accounts-mini{grid-template-columns:1fr}
+ .form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.topbar{flex-direction:column}.periodbox{width:100%}
+ .donut-wrap{align-items:flex-start}.donut{width:120px;height:120px;flex:0 0 120px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <h1>Kelly Money Lab</h1>
+      <p>Payday tiap tanggal 25 · budget period 25–24</p>
+    </div>
+    <div class="periodbox">
+      <label>Budget period</label>
+      <select id="periodSelect"></select>
+      <div class="small" id="periodSubtitle"></div>
+    </div>
+  </div>
+
+  <section class="page active" id="page-home">
+    <div class="grid cards">
+      <div class="card stat"><div class="label">Total saldo</div><div class="value mono" id="homeTotalBalance">Rp0</div><div class="sub">semua account</div></div>
+      <div class="card stat"><div class="label">Income periode</div><div class="value mono" id="homeIncome">Rp0</div><div class="sub">uang baru masuk</div></div>
+      <div class="card stat"><div class="label">Spending periode</div><div class="value mono" id="homeExpense">Rp0</div><div class="sub">expense saja</div></div>
+      <div class="card stat"><div class="label">Sisa budget</div><div class="value mono" id="homeBudgetLeft">Rp0</div><div class="sub" id="budgetSub">planned vs actual</div></div>
+    </div>
+
+    <div class="section-title"><h2>Where My Money Lives</h2><small id="carriedInfo"></small></div>
+    <div class="accounts-mini" id="homeAccounts"></div>
+
+    <div class="grid two" style="margin-top:14px">
+      <div class="card">
+        <div class="section-title" style="margin-top:0"><h2>Spending by category</h2><small id="spendingTotalLabel"></small></div>
+        <div class="donut-wrap">
+          <div class="donut" id="donut"></div>
+          <div class="legend" id="legend"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title" style="margin-top:0"><h2>Budget pulse</h2><small>≥80% = heads up</small></div>
+        <div id="budgetPulse"></div>
+      </div>
+    </div>
+
+    <div class="section-title"><h2>Compared with previous period</h2><small id="prevPeriodLabel"></small></div>
+    <div class="card" id="compareBox"></div>
+  </section>
+
+  <section class="page" id="page-add">
+    <div class="card">
+      <div class="section-title" style="margin-top:0"><h2>Add transaction</h2><small>quick first, detail optional</small></div>
+      <div class="type-toggle">
+        <button data-type="expense" class="active">Expense</button>
+        <button data-type="income">Income</button>
+        <button data-type="transfer">Transfer</button>
+      </div>
+      <form id="transactionForm">
+        <div class="form-grid">
+          <div class="field"><label>Date</label><input type="date" id="txDate" required></div>
+          <div class="field"><label>Amount</label><input class="money-input" data-money inputmode="numeric" id="txAmount" placeholder="50.000" required></div>
+          <div class="field expense-only"><label>Category</label><select id="txCategory"></select></div>
+          <div class="field expense-only income-only"><label id="accountLabel">Paid from</label><select id="txAccount"></select></div>
+          <div class="field transfer-only" style="display:none"><label>From account</label><select id="txFrom"></select></div>
+          <div class="field transfer-only" style="display:none"><label>To account</label><select id="txTo"></select></div>
+          <div class="field expense-only"><label>Meaning tag <span class="small">(optional)</span></label><select id="txMeaning"></select></div>
+          <div class="field full"><label>Description / note <span class="small">(optional)</span></label><input id="txNote" placeholder="contoh: bensin Shell / Spotify / makan siang"></div>
+        </div>
+        <div class="actions"><button class="primary" type="submit">Save transaction</button><button class="secondary" type="button" id="clearTx">Clear</button></div>
+      </form>
+    </div>
+    <div class="callout" style="margin-top:14px">Transfer antar-account tidak dihitung sebagai spending. Tarik tunai = transfer dari Daily Bank ke Cash.</div>
+  </section>
+
+  <section class="page" id="page-budget">
+    <div class="grid two">
+      <div class="card">
+        <div class="section-title" style="margin-top:0"><h2>Planned budget</h2><small>reset per 25–24</small></div>
+        <div id="budgetEditor"></div>
+        <div class="actions"><button class="primary" id="saveBudget">Save planned budget</button></div>
+      </div>
+      <div class="card">
+        <div class="section-title" style="margin-top:0"><h2>Reallocate budget</h2><small>izin belanja, bukan saldo</small></div>
+        <div class="form-grid">
+          <div class="field"><label>From</label><select id="reFrom"></select></div>
+          <div class="field"><label>To</label><select id="reTo"></select></div>
+          <div class="field full"><label>Amount</label><input data-money inputmode="numeric" id="reAmount" placeholder="100.000"></div>
+        </div>
+        <div class="actions"><button class="primary" id="doReallocate">Move budget</button></div>
+        <hr>
+        <div id="reallocationHistory"></div>
+      </div>
+    </div>
+    <div class="section-title"><h2>Effective budget vs actual</h2><small>after reallocation</small></div>
+    <div class="card" id="effectiveBudgetTable"></div>
+  </section>
+
+  <section class="page" id="page-accounts">
+    <div class="grid two">
+      <div class="card">
+        <div class="section-title" style="margin-top:0"><h2>Accounts</h2><small>starting balance set once</small></div>
+        <div id="accountEditor"></div>
+        <div class="actions"><button class="primary" id="saveAccounts">Save account setup</button></div>
+      </div>
+      <div class="card">
+        <div class="section-title" style="margin-top:0"><h2>Reconcile balance</h2><small>kalau lupa catat transaksi</small></div>
+        <div class="form-grid">
+          <div class="field"><label>Account</label><select id="adjAccount"></select></div>
+          <div class="field"><label>Actual balance now</label><input data-money inputmode="numeric" id="adjBalance" placeholder="contoh 1.250.000"></div>
+          <div class="field full"><label>Note</label><input id="adjNote" placeholder="optional"></div>
+        </div>
+        <div class="actions"><button class="secondary" id="applyAdjustment">Adjust to actual</button></div>
+        <div class="small" style="margin-top:10px">Adjustment tidak dihitung sebagai income/expense; hanya merapikan saldo account.</div>
+      </div>
+    </div>
+
+    <div class="section-title"><h2>Backup & export</h2><small>data tersimpan di browser ini</small></div>
+    <div class="card">
+      <div class="actions">
+        <button class="secondary" id="exportCsv">Export CSV</button>
+        <button class="secondary" id="exportJson">Backup JSON</button>
+        <label class="secondary" style="display:inline-flex;align-items:center;gap:8px">Restore JSON<input type="file" id="importJson" accept=".json" style="display:none"></label>
+      </div>
+      <div class="small" style="margin-top:10px">Kalau app dipakai dari GitHub Pages, gunakan URL yang sama agar localStorage tetap terbaca. Backup JSON secara berkala.</div>
+    </div>
+  </section>
+
+  <section class="page" id="page-history">
+    <div class="card">
+      <div class="section-title" style="margin-top:0"><h2>Transaction history</h2><small id="historyCount"></small></div>
+      <div class="pill-tabs">
+        <button data-filter="all" class="active">All</button>
+        <button data-filter="expense">Expense</button>
+        <button data-filter="income">Income</button>
+        <button data-filter="transfer">Transfer</button>
+      </div>
+      <div class="table-wrap" style="margin-top:10px">
+        <table class="table">
+          <thead><tr><th>Date</th><th>Type</th><th>Category / flow</th><th>Account</th><th>Note</th><th class="right">Amount</th><th></th></tr></thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<nav class="nav"><div class="nav-inner">
+  <button data-page="home" class="active">⌂<br>Home</button>
+  <button data-page="add">＋<br>Add</button>
+  <button data-page="budget">◫<br>Budget</button>
+  <button data-page="accounts">◎<br>Accounts</button>
+  <button data-page="history">≡<br>History</button>
+</div></nav>
+
+<script>
+const LS_KEY="kellyMoneyLab_v1";
+const DEFAULT_CATEGORIES=["Subscriptions","Kopi","Bensin","Perawatan Motor","Family","Beauty","Belanja Bulanan","Jajan","Pulsa","Makan","Paylater","Investment","Entertainment","Other"];
+const MEANING_TAGS=["","Need","Joy","Convenience","Growth","Relationship","Family Support","Obligation","Impulse"];
+const DEFAULT_BUDGET={
+ "Subscriptions":107000,
+ "Kopi":400000,
+ "Bensin":217000,
+ "Perawatan Motor":350000,
+ "Family":1300000,
+ "Beauty":750000,
+ "Belanja Bulanan":650000,
+ "Jajan":480000,
+ "Pulsa":110000,
+ "Makan":525000,
+ "Paylater":1661000,
+ "Investment":250000,
+ "Entertainment":300000,
+ "Other":100000
+};
+const palette=["#6d7b5a","#b98d68","#8b6f80","#6d8b91","#c0a15d","#9f725b","#7d806e","#9a8fb3","#7f9e88","#c38787","#7992a8","#b7a15f","#8a7c69","#9b968d"];
+
+function freshState(){
+ const currentKey=periodKeyForDate(new Date());
+ return {
+  settings:{payday:25},
+  accounts:[
+   {id:"daily",name:"Daily Bank",startingBalance:0},
+   {id:"visa",name:"Visa Bank",startingBalance:0},
+   {id:"cash",name:"Cash",startingBalance:0}
+  ],
+  categories:[...DEFAULT_CATEGORIES],
+  transactions:[],
+  budgets:{[currentKey]:{...DEFAULT_BUDGET}},
+  reallocations:{}
+ };
+}
+let state=loadState();
+let activePeriodKey=periodKeyForDate(new Date());
+let txType="expense";
+let historyFilter="all";
+
+function loadState(){
+ const base=freshState();
+ try{
+  const x=JSON.parse(localStorage.getItem(LS_KEY));
+  if(x && x.transactions && x.accounts){
+   const merged={...base,...x};
+   merged.budgets={...base.budgets,...(x.budgets||{})};
+   const ck=periodKeyForDate(new Date());
+   const existing=merged.budgets[ck]||{};
+   const hasAny=Object.values(existing).some(v=>Number(v)>0);
+   if(!hasAny) merged.budgets[ck]={...DEFAULT_BUDGET};
+   return merged;
+  }
+ }catch(e){}
+ return base;
+}
+function saveState(){localStorage.setItem(LS_KEY,JSON.stringify(state));}
+function fmt(n){return new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(n)||0)}
+function num(v){return Number(String(v??"").replace(/[^\d-]/g,""))||0}
+function moneyDigits(v){
+ const digits=String(v??"").replace(/\D/g,"");
+ if(!digits)return "";
+ return Number(digits).toLocaleString("id-ID");
+}
+function iso(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`}
+function parseDate(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
+function addMonths(d,n){const x=new Date(d);x.setMonth(x.getMonth()+n);return x}
+function periodStartForDate(date){
+ const d=new Date(date), payday=25, y=d.getFullYear(),m=d.getMonth();
+ return d.getDate()>=payday?new Date(y,m,payday):new Date(y,m-1,payday);
+}
+function periodKeyForDate(date){return iso(periodStartForDate(date))}
+function periodRange(key){
+ const start=parseDate(key), end=new Date(start.getFullYear(),start.getMonth()+1,24,23,59,59);
+ return {start,end};
+}
+function monthName(d){return new Intl.DateTimeFormat("id-ID",{month:"long",year:"numeric"}).format(d)}
+function labelForPeriod(key){
+ const {start,end}=periodRange(key);
+ const a=new Intl.DateTimeFormat("id-ID",{day:"numeric",month:"short"}).format(start);
+ const b=new Intl.DateTimeFormat("id-ID",{day:"numeric",month:"short"}).format(end);
+ const wage=new Intl.DateTimeFormat("id-ID",{month:"long"}).format(start);
+ return `Gaji ${wage} · ${a}–${b}`;
+}
+function previousPeriodKey(key){
+ const d=parseDate(key); return iso(new Date(d.getFullYear(),d.getMonth()-1,25));
+}
+function txInPeriod(tx,key){
+ const {start,end}=periodRange(key), d=parseDate(tx.date); return d>=start && d<=end;
+}
+function periodTransactions(key){return state.transactions.filter(t=>txInPeriod(t,key))}
+function accountById(id){return state.accounts.find(a=>a.id===id)}
+function accountBalanceAt(accountId, cutoffInclusive=null){
+ let bal=Number(accountById(accountId)?.startingBalance||0);
+ const list=[...state.transactions].sort((a,b)=>a.date.localeCompare(b.date)||a.createdAt-b.createdAt);
+ for(const t of list){
+  const td=parseDate(t.date);
+  if(cutoffInclusive && td>cutoffInclusive) continue;
+  if(t.type==="income" && t.account===accountId) bal+=t.amount;
+  if(t.type==="expense" && t.account===accountId) bal-=t.amount;
+  if(t.type==="transfer"){if(t.from===accountId)bal-=t.amount;if(t.to===accountId)bal+=t.amount}
+  if(t.type==="adjustment" && t.account===accountId) bal+=t.amount;
+ }
+ return bal;
+}
+function totalBalanceNow(){return state.accounts.reduce((s,a)=>s+accountBalanceAt(a.id),0)}
+function carriedAtPeriodStart(key){
+ const {start}=periodRange(key); const prev=new Date(start); prev.setDate(prev.getDate()-1);
+ return state.accounts.reduce((s,a)=>s+accountBalanceAt(a.id,prev),0);
+}
+function spendingByCategory(key){
+ const out={}; state.categories.forEach(c=>out[c]=0);
+ periodTransactions(key).filter(t=>t.type==="expense").forEach(t=>out[t.category]=(out[t.category]||0)+t.amount);
+ return out;
+}
+function incomeForPeriod(key){return periodTransactions(key).filter(t=>t.type==="income").reduce((s,t)=>s+t.amount,0)}
+function expenseForPeriod(key){return periodTransactions(key).filter(t=>t.type==="expense").reduce((s,t)=>s+t.amount,0)}
+function plannedBudget(key){return state.budgets[key]||{}}
+function effectiveBudget(key){
+ const b={}; state.categories.forEach(c=>b[c]=Number(plannedBudget(key)[c]||0));
+ (state.reallocations[key]||[]).forEach(r=>{b[r.from]=(b[r.from]||0)-r.amount;b[r.to]=(b[r.to]||0)+r.amount});
+ return b;
+}
+function sumObj(o){return Object.values(o).reduce((s,v)=>s+Number(v||0),0)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
+function buildPeriodOptions(){
+ const keys=new Set(Object.keys(state.budgets));
+ state.transactions.forEach(t=>keys.add(periodKeyForDate(parseDate(t.date))));
+ keys.add(periodKeyForDate(new Date()));
+ let cur=parseDate(periodKeyForDate(new Date()));
+ for(let i=-12;i<=3;i++) keys.add(iso(new Date(cur.getFullYear(),cur.getMonth()+i,25)));
+ const arr=[...keys].sort().reverse();
+ const s=document.getElementById("periodSelect"); s.innerHTML=arr.map(k=>`<option value="${k}" ${k===activePeriodKey?"selected":""}>${labelForPeriod(k)}</option>`).join("");
+ const {start,end}=periodRange(activePeriodKey);
+ document.getElementById("periodSubtitle").textContent=`Payday ${new Intl.DateTimeFormat("id-ID",{day:"numeric",month:"long"}).format(start)} · ends ${new Intl.DateTimeFormat("id-ID",{day:"numeric",month:"long"}).format(end)}`;
+}
+function renderHome(){
+ const expense=expenseForPeriod(activePeriodKey), income=incomeForPeriod(activePeriodKey), eff=effectiveBudget(activePeriodKey), budget=sumObj(eff);
+ document.getElementById("homeTotalBalance").textContent=fmt(totalBalanceNow());
+ document.getElementById("homeIncome").textContent=fmt(income);
+ document.getElementById("homeExpense").textContent=fmt(expense);
+ document.getElementById("homeBudgetLeft").textContent=fmt(budget-expense);
+ document.getElementById("budgetSub").textContent=`${fmt(expense)} of ${fmt(budget)}`;
+ document.getElementById("carriedInfo").textContent=`Carried into period: ${fmt(carriedAtPeriodStart(activePeriodKey))}`;
+ document.getElementById("homeAccounts").innerHTML=state.accounts.map(a=>`<div class="account-chip"><b>${esc(a.name)}</b><span class="mono">${fmt(accountBalanceAt(a.id))}</span></div>`).join("");
+
+ const spend=spendingByCategory(activePeriodKey); const pairs=Object.entries(spend).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+ document.getElementById("spendingTotalLabel").textContent=fmt(expense);
+ if(!pairs.length){
+  document.getElementById("donut").style.background="#eee8df";
+  document.getElementById("legend").innerHTML='<div class="empty">Belum ada spending di periode ini.</div>';
+ }else{
+  let acc=0, seg=[];
+  pairs.forEach(([c,v],i)=>{const p=expense?v/expense*100:0;seg.push(`${palette[i%palette.length]} ${acc}% ${acc+p}%`);acc+=p});
+  document.getElementById("donut").style.background=`conic-gradient(${seg.join(",")})`;
+  document.getElementById("legend").innerHTML=pairs.slice(0,8).map(([c,v],i)=>`<div class="legend-row"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${palette[i%palette.length]};margin-right:6px"></span>${esc(c)}</span><b>${expense?Math.round(v/expense*100):0}%</b></div>`).join("");
+ }
+ const pulse=state.categories.map(c=>({c,b:eff[c]||0,s:spend[c]||0})).filter(x=>x.b>0||x.s>0).sort((a,b)=>(b.b?b.s/b.b:9)-(a.b?a.s/a.b:9));
+ document.getElementById("budgetPulse").innerHTML=pulse.length?pulse.slice(0,7).map(x=>{
+  const pct=x.b?Math.round(x.s/x.b*100):(x.s?999:0); const cls=pct>100?"over":pct>=80?"warn":"";
+  return `<div class="progress-row"><div class="progress-head"><span>${esc(x.c)}</span><span class="mono">${fmt(x.s)} / ${fmt(x.b)} · ${pct>999?">999":pct}%</span></div><div class="bar ${cls}"><i style="width:${Math.min(pct,100)}%"></i></div></div>`;
+ }).join(""):'<div class="empty">Set budget untuk melihat pulse.</div>';
+
+ const pk=previousPeriodKey(activePeriodKey), prev=spendingByCategory(pk);
+ document.getElementById("prevPeriodLabel").textContent=labelForPeriod(pk);
+ const cats=state.categories.map(c=>({c,now:spend[c]||0,prev:prev[c]||0})).filter(x=>x.now||x.prev).sort((a,b)=>Math.abs(b.now-b.prev)-Math.abs(a.now-a.prev)).slice(0,6);
+ document.getElementById("compareBox").innerHTML=cats.length?cats.map(x=>{
+   const diff=x.now-x.prev; const pct=x.prev?Math.round(diff/x.prev*100):null;
+   return `<div class="legend-row" style="padding:8px 0;border-bottom:1px solid var(--line)"><span>${esc(x.c)}</span><span class="mono"><b>${fmt(x.now)}</b> <span class="small">${diff===0?"same":(diff>0?"+":"")+fmt(diff)}${pct!==null?` (${pct>0?"+":""}${pct}%)`:""}</span></span></div>`;
+ }).join(""):'<div class="empty">Belum ada dua periode data untuk dibandingkan.</div>';
+}
+function renderAdd(){
+ const acOpts=state.accounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join("");
+ ["txAccount","txFrom","txTo"].forEach(id=>document.getElementById(id).innerHTML=acOpts);
+ document.getElementById("txCategory").innerHTML=state.categories.map(c=>`<option>${esc(c)}</option>`).join("");
+ document.getElementById("txMeaning").innerHTML=MEANING_TAGS.map(m=>`<option value="${esc(m)}">${m?esc(m):"— no tag —"}</option>`).join("");
+ if(!document.getElementById("txDate").value)document.getElementById("txDate").value=iso(new Date());
+ updateTxTypeUI();
+}
+function updateTxTypeUI(){
+ document.querySelectorAll(".type-toggle button").forEach(b=>b.classList.toggle("active",b.dataset.type===txType));
+ document.querySelectorAll(".expense-only").forEach(el=>el.style.display=txType==="expense"?"flex":"none");
+ document.querySelectorAll(".income-only").forEach(el=>el.style.display=txType==="income"?"flex":"none");
+ document.querySelectorAll(".transfer-only").forEach(el=>el.style.display=txType==="transfer"?"flex":"none");
+ if(txType==="income"){document.getElementById("txAccount").closest(".field").style.display="flex";document.getElementById("accountLabel").textContent="Received to"}
+}
+function renderBudget(){
+ const pb=plannedBudget(activePeriodKey), spend=spendingByCategory(activePeriodKey), eff=effectiveBudget(activePeriodKey);
+ document.getElementById("budgetEditor").innerHTML=state.categories.map(c=>`<div class="field" style="margin-bottom:9px"><label>${esc(c)}</label><input data-money inputmode="numeric" data-budget-cat="${esc(c)}" value="${pb[c]?moneyDigits(pb[c]):""}" placeholder="0"></div>`).join("");
+ const opts=state.categories.map(c=>`<option>${esc(c)}</option>`).join("");document.getElementById("reFrom").innerHTML=opts;document.getElementById("reTo").innerHTML=opts;
+ const rs=state.reallocations[activePeriodKey]||[];
+ document.getElementById("reallocationHistory").innerHTML=rs.length?rs.map((r,i)=>`<div class="legend-row" style="padding:7px 0"><span>${esc(r.from)} → ${esc(r.to)}</span><span>${fmt(r.amount)} <button class="danger" onclick="deleteReallocation(${i})">×</button></span></div>`).join(""):'<div class="empty">Belum ada realokasi.</div>';
+ document.getElementById("effectiveBudgetTable").innerHTML=`<div class="table-wrap"><table class="table"><thead><tr><th>Category</th><th class="right">Planned</th><th class="right">Effective</th><th class="right">Actual</th><th class="right">Remaining</th></tr></thead><tbody>${state.categories.map(c=>`<tr><td>${esc(c)}</td><td class="right">${fmt(pb[c]||0)}</td><td class="right">${fmt(eff[c]||0)}</td><td class="right">${fmt(spend[c]||0)}</td><td class="right"><b>${fmt((eff[c]||0)-(spend[c]||0))}</b></td></tr>`).join("")}</tbody></table></div>`;
+}
+function renderAccounts(){
+ document.getElementById("accountEditor").innerHTML=state.accounts.map((a,i)=>`<div class="form-grid" style="margin-bottom:10px"><div class="field"><label>Account name</label><input data-ac-name="${i}" value="${esc(a.name)}"></div><div class="field"><label>Starting balance</label><input data-money inputmode="numeric" data-ac-bal="${i}" value="${a.startingBalance?moneyDigits(a.startingBalance):""}" placeholder="0"></div></div><div class="small" style="margin:-2px 0 12px">Current: <b>${fmt(accountBalanceAt(a.id))}</b></div>`).join("");
+ document.getElementById("adjAccount").innerHTML=state.accounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join("");
+}
+function renderHistory(){
+ const txs=periodTransactions(activePeriodKey).filter(t=>historyFilter==="all"||t.type===historyFilter).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt);
+ document.getElementById("historyCount").textContent=`${txs.length} entries`;
+ document.querySelectorAll(".pill-tabs button").forEach(b=>b.classList.toggle("active",b.dataset.filter===historyFilter));
+ document.getElementById("historyBody").innerHTML=txs.length?txs.map(t=>{
+  let flow=t.category||""; let acct="";
+  if(t.type==="expense"||t.type==="income")acct=accountById(t.account)?.name||"";
+  if(t.type==="transfer"){flow=`${accountById(t.from)?.name||""} → ${accountById(t.to)?.name||""}`;acct="Transfer";}
+  if(t.type==="adjustment"){flow="Balance adjustment";acct=accountById(t.account)?.name||""}
+  return `<tr><td>${t.date}</td><td><span class="badge ${t.type}">${t.type}</span></td><td>${esc(flow)}${t.meaning?`<div class="small">${esc(t.meaning)}</div>`:""}</td><td>${esc(acct)}</td><td>${esc(t.note||"")}</td><td class="right"><b>${fmt(t.amount)}</b></td><td><button class="danger" onclick="deleteTx('${t.id}')">Delete</button></td></tr>`;
+ }).join(""):'<tr><td colspan="7"><div class="empty">Belum ada transaksi.</div></td></tr>';
+}
+function renderAll(){buildPeriodOptions();renderHome();renderAdd();renderBudget();renderAccounts();renderHistory()}
+function switchPage(name){
+ document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===`page-${name}`));
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+document.addEventListener("input",e=>{
+ if(e.target.matches("[data-money]")){
+  const old=e.target.value;
+  const formatted=moneyDigits(old);
+  e.target.value=formatted;
+ }
+});
+
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>switchPage(b.dataset.page)));
+document.getElementById("periodSelect").addEventListener("change",e=>{activePeriodKey=e.target.value;renderAll()});
+document.querySelectorAll(".type-toggle button").forEach(b=>b.addEventListener("click",()=>{txType=b.dataset.type;updateTxTypeUI()}));
+document.getElementById("clearTx").addEventListener("click",()=>{document.getElementById("transactionForm").reset();document.getElementById("txDate").value=iso(new Date());renderAdd()});
+
+document.getElementById("transactionForm").addEventListener("submit",e=>{
+ e.preventDefault(); const amount=num(document.getElementById("txAmount").value); if(amount<=0)return alert("Amount harus lebih dari 0.");
+ const t={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),type:txType,date:document.getElementById("txDate").value,amount,createdAt:Date.now(),note:document.getElementById("txNote").value.trim()};
+ if(txType==="expense"){t.category=document.getElementById("txCategory").value;t.account=document.getElementById("txAccount").value;t.meaning=document.getElementById("txMeaning").value}
+ if(txType==="income"){t.account=document.getElementById("txAccount").value;t.category="Income"}
+ if(txType==="transfer"){t.from=document.getElementById("txFrom").value;t.to=document.getElementById("txTo").value;if(t.from===t.to)return alert("From dan To tidak boleh sama.")}
+ state.transactions.push(t);saveState();activePeriodKey=periodKeyForDate(parseDate(t.date));e.target.reset();document.getElementById("txDate").value=iso(new Date());renderAll();switchPage("home");
+});
+
+document.getElementById("saveBudget").addEventListener("click",()=>{
+ const b={};document.querySelectorAll("[data-budget-cat]").forEach(i=>b[i.dataset.budgetCat]=num(i.value));state.budgets[activePeriodKey]=b;saveState();renderAll();alert("Budget saved.");
+});
+document.getElementById("doReallocate").addEventListener("click",()=>{
+ const from=document.getElementById("reFrom").value,to=document.getElementById("reTo").value,amount=num(document.getElementById("reAmount").value);
+ if(from===to)return alert("Pilih kategori yang berbeda."); if(amount<=0)return alert("Amount harus lebih dari 0.");
+ state.reallocations[activePeriodKey]=state.reallocations[activePeriodKey]||[];state.reallocations[activePeriodKey].push({from,to,amount,createdAt:Date.now()});saveState();document.getElementById("reAmount").value="";renderAll();
+});
+window.deleteReallocation=function(i){state.reallocations[activePeriodKey].splice(i,1);saveState();renderAll()}
+
+document.getElementById("saveAccounts").addEventListener("click",()=>{
+ state.accounts.forEach((a,i)=>{a.name=document.querySelector(`[data-ac-name="${i}"]`).value.trim()||a.name;a.startingBalance=num(document.querySelector(`[data-ac-bal="${i}"]`).value)});saveState();renderAll();alert("Account setup saved.");
+});
+document.getElementById("applyAdjustment").addEventListener("click",()=>{
+ const account=document.getElementById("adjAccount").value,actual=num(document.getElementById("adjBalance").value),current=accountBalanceAt(account),diff=actual-current;
+ if(!document.getElementById("adjBalance").value)return alert("Masukkan actual balance.");
+ state.transactions.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),type:"adjustment",date:iso(new Date()),amount:diff,account,createdAt:Date.now(),note:document.getElementById("adjNote").value.trim()||"Balance reconciliation"});
+ saveState();document.getElementById("adjBalance").value="";document.getElementById("adjNote").value="";renderAll();alert(`Adjusted by ${fmt(diff)}.`);
+});
+window.deleteTx=function(id){if(confirm("Delete transaksi ini?")){state.transactions=state.transactions.filter(t=>t.id!==id);saveState();renderAll()}}
+
+document.querySelectorAll(".pill-tabs button").forEach(b=>b.addEventListener("click",()=>{historyFilter=b.dataset.filter;renderHistory()}));
+
+function download(name,content,type){const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),500)}
+document.getElementById("exportJson").addEventListener("click",()=>download(`kelly-money-lab-backup-${iso(new Date())}.json`,JSON.stringify(state,null,2),"application/json"));
+document.getElementById("exportCsv").addEventListener("click",()=>{
+ const rows=[["date","type","category","account","from","to","amount","meaning","note"]];
+ state.transactions.forEach(t=>rows.push([t.date,t.type,t.category||"",accountById(t.account)?.name||"",accountById(t.from)?.name||"",accountById(t.to)?.name||"",t.amount,t.meaning||"",t.note||""]));
+ const csv=rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(",")).join("\n");
+ download(`kelly-money-lab-${iso(new Date())}.csv`,csv,"text/csv;charset=utf-8");
+});
+document.getElementById("importJson").addEventListener("change",e=>{
+ const f=e.target.files[0];if(!f)return;const reader=new FileReader();reader.onload=()=>{try{const x=JSON.parse(reader.result);if(!x.transactions||!x.accounts)throw 0;if(confirm("Restore backup ini? Data sekarang akan diganti.")){state=x;saveState();activePeriodKey=periodKeyForDate(new Date());renderAll()}}catch{alert("File backup tidak valid.")}};reader.readAsText(f);
+});
+
+renderAll();
+</script>
+</body>
+</html>
